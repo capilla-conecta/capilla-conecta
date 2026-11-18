@@ -11,6 +11,33 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+  /* Arreglo de emergencia para móviles */
+  @media (max-width: 600px) {
+    /* Achicamos el logo y el título */
+    .brand-logo { width: 30px !important; height: 30px !important; font-size: 16px !important; }
+    .brand-title { font-size: 14px !important; }
+    .brand-subtitle { display: none !important; }
+    
+    /* Achicamos los botones del menú superior */
+    .header-nav { display: none !important; } /* Ocultamos el menú de compu */
+    .header-inner { padding: 0 0.5rem !important; height: 50px !important; gap: 0.2rem !important; }
+    
+    /* Hacemos que los botones de la derecha (instalar, perfil) no se amontonen */
+    .header-actions { gap: 0.2rem !important; }
+    .user-pill-text { display: none !important; } /* Solo mostramos el avatar */
+    .btn-install-header .install-text { display: none !important; }
+    
+    /* El menú de abajo (Tablón, Chat, Mi Barrio, etc.) */
+    .mobile-nav {
+      display: flex !important;
+      justify-content: space-around !important;
+      padding: 0.2rem !important;
+    }
+    .mobile-nav-btn { font-size: 9px !important; padding: 0.2rem !important; }
+    .mobile-nav-btn span { font-size: 8px !important; }
+  }
+</style>
 </head>
 <body>
   <!-- ===== INDICADOR OFFLINE ===== -->
