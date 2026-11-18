@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d9488" />
+  <meta name="description" content="Chat y tablón comunitario exclusivo para vecinos de Capilla del Monte, Córdoba" />
+  <title>Capilla Conecta</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛰️</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ===== INDICADOR OFFLINE ===== -->
+  <div id="offline-indicator" class="offline-indicator hidden">
+    <span>⚠️ Sin conexión · Los mensajes se guardarán localmente</span>
+  </div>
+
+  <!-- ===== APP PRINCIPAL ===== -->
+  <div id="app" class="app-container">
+
+    <!-- ===== MODAL DE AUTH (LOGIN/REGISTRO) ===== -->
+    <!--<div id="auth-modal" class="modal-overlay hidden"> el que estaba causando el error de que en el movil no se vea-->
+      <div id="auth-modal" class="modal-overlay">
+      <div class="modal auth-modal">
+        <div class="auth-header">
+          <div class="auth-logo">⛰️</div>
+          <h2>Capilla Conecta</h2>
+          <p>Chat y tablón comunitario exclusivo para vecinos de Capilla del Monte, Córdoba</p>
+          <div style="margin: 0.75rem auto 0 auto; display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 12px; font-weight: 600;">
+  <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
+  <span id="online-count">Cargando...</span>
+</div>
+        </div>
+
+        <div class="auth-body">
+          <!-- Banner instalar -->
+          <div class="install-banner" onclick="openInstallModal()">
+            <div class="install-banner-text">
+              <span class="install-banner-icon">📱</span>
+              <div>
+                <strong>Capilla Conecta en tu Celular</strong>
+                <small>Instalar en navegador o descargar archivo .APK</small>
+              </div>
+            </div>
+            <button class="btn btn-teal btn-sm" onclick="event.stopPropagation(); openInstallModal()">
+              ⬇️ Instalar / APK
+            </button>
+          </div>
+
+          <!-- Tabs login/registro -->
+          <div class="auth-tabs">
+            <button id="tab-register" class="auth-tab active" onclick="switchAuthTab('register')">Nuevo Vecino (Registrarse)</button>
+            <button id="tab-login" class="auth-tab" onclick="switchAuthTab('login')">Ya tengo cuenta (Iniciar sesión)</button>
+          </div>
+
+          <div id="auth-error" class="alert alert-error hidden"></div>
+
+          <!-- FORM REGISTRO -->
+          <form id="form-register" class="auth-form" onsubmit="handleRegister(event)">
+            
+            <!-- Selector de modo -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; background: var(--slate-100); padding: 0.25rem; border-radius: 10px;">
+              <button type="button" id="btn-mode-guest" class="btn btn-teal btn-sm" style="flex: 1;" onclick="switchRegisterMode('guest')">👤 Entrada Rápida</button>
+              <button type="button" id="btn-mode-email" class="btn btn-outline btn-sm" style="flex: 1;" onclick="switchRegisterMode('email')">⭐ Con Correo</button>
+            </div>
+
+            <!-- Aviso de beneficios -->
+            <div id="guest-warning" class="alert alert-warning" style="font-size: 11px;">
+              <strong>Modo Invitado:</strong> No sumás puntos de reputación (⭐) y si cambiás de celular no vas a poder borrar tus mensajes viejos. ¡Registrate con correo para ser un Vecino Destacado!
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nombre o Nick *</label>
+                <input type="text" id="reg-name" required placeholder="Ej: Marcelo o Don Pepe" />
+              </div>
+              <div class="form-group">
+                <label>Tu Barrio en Capilla *</label>
+                <select id="reg-neighborhood" required>
+                    <option value="" disabled selected>📍 Seleccioná tu barrio...</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Campos que solo aparecen si elige "Con Correo" -->
+            <div id="email-fields" class="hidden">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Correo electrónico *</label>
+                  <input type="email" id="reg-email" placeholder="vecino@gmail.com" />
+                </div>
+                <div class="form-group">
+                  <label>Contraseña (mín. 6 car.)</label>
+                    <div style="position: relative;">
+                        <input type="password" id="reg-password" placeholder="••••••••" style="width: 100%; padding-right: 40px;" />
+                        <button type="button" onclick="togglePassword('reg-password', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; display: flex; align-items: center; justify-content: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-name">
+              <span>Así te verán los vecinos:</span>
+              <strong id="preview-name-text">⛰️ Tu Nombre (Centro)</strong>
+            </div>
+
+            <div class="form-group">
+              <div class="label-row">
+                <label>Elige tu avatar:</label>
+              </div>
+              <div id="avatar-grid" class="avatar-grid"></div>
+            </div>
+
+            <div class="rules-box">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="reg-rules" /> <!-- SIN checked -->
+                    <span>Acepto las <a href="#" onclick="event.preventDefault(); document.getElementById('rules-modal').classList.remove('hidden');" style="color: var(--teal-600); text-decoration: underline; font-weight: bold;">Reglas de Convivencia</a> de Capilla del Monte.</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-teal btn-block">✅ Ingresar a Capilla Conecta</button>
+          </form>
+
+          <!-- FORM LOGIN -->
+          <form id="form-login" class="auth-form hidden" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label>Correo electrónico *</label>
+              <input type="email" id="login-email" required placeholder="vecino@ejemplo.com" />
+            </div>
+            <div class="form-group">
+              <label>Contraseña</label>
+                <div style="position: relative;">
+                    <input type="password" id="login-password" placeholder="••••••••" style="width: 100%; padding-right: 40px;" />
+                    <button type="button" onclick="togglePassword('login-password', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-teal btn-block">🔒 Iniciar Sesión</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <header id="main-header" class="main-header hidden">
+      <div class="header-inner">
+        <div class="header-brand">
+          <button class="brand-btn" onclick="selectTab('tablon')">
+            <div class="brand-logo">⛰️</div>
+            <div>
+              <span class="brand-title">Capilla Conecta</span>
+              <span class="brand-subtitle">Capilla del Monte</span>
+            </div>
+         
+        <!-- NAV ESCRITORIO -->
+        <nav class="header-nav">
+          <button class="nav-btn" data-tab="tablon" onclick="selectTab('tablon')">📋 Tablón</button>
+          <button class="nav-btn" data-tab="chat" onclick="selectTab('chat')" style="position: relative;">
+            💬 Chat
+            <span id="chat-dot-general-desktop" class="hidden" style="position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background: #dc2626; border-radius: 50%;"></span>
+          </button>
+          <button class="nav-btn" data-tab="barrios" onclick="selectTab('barrios')">🧭 20 Barrios</button>
+          <button class="nav-btn hidden" data-tab="comercios" onclick="selectTab('comercios')" id="nav-comercios">🏪 Comercios</button>
+          <button class="nav-btn" data-tab="mibarrio" onclick="selectTab('mibarrio')" id="nav-mibarrio" style="position: relative;">
+            📍 Mi Barrio
+            <span id="chat-dot-barrio-desktop" class="hidden" style="position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background: #dc2626; border-radius: 50%;"></span>
+          </button>
+          <button class="nav-btn" data-tab="admin" onclick="selectTab('admin')" id="nav-admin">🛡️ Admin</button>
+        </nav>
+
+        <div class="header-actions">
+          <button class="btn btn-teal btn-sm" onclick="openInstallModal()" id="btn-install-header" title="Instalar App">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span class="install-text">Instalar App</span>
+          </button>
+          
+          <button class="icon-btn" id="theme-toggle" onclick="toggleDarkMode()" title="Cambiar tema">🌙</button>
+          
+          <button class="icon-btn hidden" id="notif-btn" onclick="toggleNotifications()" style="position: relative;">
+            🔔
+            <span id="notif-dot" class="hidden" style="position: absolute; top: -2px; right: -2px; min-width: 16px; height: 16px; padding: 0 4px; background: #dc2626; color: white; border-radius: 999px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; line-height: 1;"></span>
+          </button>
+          
+          <button class="user-pill hidden" id="user-pill" onclick="openProfileModal()">
+            <span id="user-avatar">⛰️</span>
+            <div class="user-pill-text">
+              <strong id="user-name">Vecino</strong>
+              <small>Perfil / Config</small>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- NAV MÓVIL -->
+      <nav class="mobile-nav">
+        <button class="mobile-nav-btn" data-tab="tablon" onclick="selectTab('tablon')">📋<span>Tablón</span></button>
+        
+        <button class="mobile-nav-btn" data-tab="chat" onclick="selectTab('chat')" style="position: relative;">
+          💬<span>Chat</span>
+          <span id="chat-dot-general-mobile" class="hidden" style="position: absolute; top: 2px; right: 12px; width: 8px; height: 8px; background: #dc2626; border-radius: 50%;"></span>
+        </button>
+        
+        <button class="mobile-nav-btn" data-tab="mibarrio" onclick="selectTab('mibarrio')" id="mobile-mibarrio" style="position: relative;">
+          📍<span>Mi Barrio</span>
+          <span id="chat-dot-barrio-mobile" class="hidden" style="position: absolute; top: 2px; right: 12px; width: 8px; height: 8px; background: #dc2626; border-radius: 50%;"></span>
+        </button>
+        
+        <button class="mobile-nav-btn" data-tab="barrios" onclick="selectTab('barrios')">🧭<span>Barrios</span></button>
+        
+        <!-- Botón de Admin (solo para el admin/moderador) -->
+        <button class="mobile-nav-btn hidden" data-tab="admin" onclick="selectTab('admin')" id="mobile-admin">🛡️<span>Admin</span></button>
+        
+        <!-- Botón de Comercios (solo para vecinos comunes) -->
+        <button class="mobile-nav-btn" data-tab="comercios" onclick="selectTab('comercios')" id="mobile-comercios">🏪<span>Comercios</span></button>
+      </nav>
+    </header>
+
+    <!-- ===== CONTENIDO PRINCIPAL ===== -->
+    <main id="main-content" class="main-content hidden">
+      <!-- Las vistas se inyectan dinámicamente con JS -->
+    </main>
+    <div id="comercios-detalle" class="hidden" style="display: flex; flex-direction: column; height: 100%; overflow-y: auto;"></div>
+  </div>
+
+  <!-- ===== MODAL PERFIL ===== -->
+  <div id="profile-modal" class="modal-overlay hidden">
+    <div class="modal profile-modal">
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <span id="profile-avatar" class="modal-avatar">⛰️</span>
+          <div>
+            <h3>Configuración y Mi Perfil</h3>
+            <p id="profile-formatted-name">Vecino (Centro)</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="closeProfileModal()">✕</button>
+      </div>
+      
+      <form id="profile-form" class="modal-body" onsubmit="handleProfileUpdate(event)">
+        <div id="profile-error" class="alert alert-error hidden"></div>
+        <div id="profile-success" class="alert alert-success hidden"></div>
+
+        <!-- 👇 TARJETA DE PUNTOS (Para usuarios registrados) 👇 -->
+        <div id="profile-points-card" style="text-align: center; margin-bottom: 1.5rem; padding: 1.25rem 1rem; background: var(--bg-body); border-radius: 12px; border: 1px solid var(--border-color);">
+          <div style="margin-bottom: 0.5rem;">
+            <span style="font-size: 20px; font-weight: 900; color: var(--teal-600);" id="profile-points-display">0</span>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">votos</span>
+          </div>
+          
+          <div id="profile-badge-display" class="badge" style="display: inline-block; padding: 4px 12px; border-radius: 999px; font-weight: 800; font-size: 14px; margin-bottom: 1rem; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">
+            👤 Vecino
+          </div>
+
+          <!-- Barra de Progreso -->
+          <div style="text-align: left;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; color: var(--text-secondary); margin-bottom: 4px; padding: 0 4px;">
+              <span id="my-progress-target">Próximo rango</span>
+              <span id="my-progress-percent">0%</span>
+            </div>
+            <div style="background: var(--slate-200); height: 12px; border-radius: 999px; overflow: hidden; position: relative;">
+              <div id="my-progress-bar" style="background: #cbd5e1; height: 100%; width: 0%; transition: all 0.5s ease; border-radius: 999px;"></div>
+            </div>
+            <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 6px; font-weight: 600;" id="my-progress-text">0 / 5 votos</div>
+            
+            <!-- Camino de insignias -->
+            <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding: 0 4px; font-size: 16px; opacity: 0.4;" id="my-badges-path">
+              <span id="my-path-vecino" title="Vecino">👤</span>
+              <span id="my-path-novato" title="Novato">✨</span>
+              <span id="my-path-colaborador" title="Colaborador">🌱</span>
+              <span id="my-path-activo" title="Activo">🔥</span>
+              <span id="my-path-muyactivo" title="Muy Activo">🌟</span>
+              <span id="my-path-destacado" title="Destacado">⭐</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 👇 CARTEL PARA INVITADOS 👇 -->
+        <div id="guest-profile-warning" class="hidden" style="text-align: center; padding: 1.5rem; background: #fef3c7; border: 1px solid #fde68a; border-radius: 12px; margin-bottom: 1.5rem;">
+          <div style="font-size: 32px; margin-bottom: 0.5rem;">⭐</div>
+          <h4 style="font-weight: 800; color: #b45309; margin-bottom: 0.25rem;">¡Sé un Vecino Destacado!</h4>
+          <p style="font-size: 12px; color: #92400e; margin-bottom: 1rem;">Actualmente estás navegando como invitado. Los vecinos con cuenta de correo suman puntos, ganan insignias y pueden recibir votos de la comunidad.</p>
+          <button type="button" class="btn btn-teal btn-block" onclick="handleLogout()">Crear mi cuenta ahora</button>
+        </div>
+
+        <!-- 👇 RESTO DEL FORMULARIO 👇 -->
+        <div class="form-group">
+          <label>Nombre Visible o Apodo</label>
+          <input type="text" id="prof-name" placeholder="Ej: Marcelo o Don Pedro" />
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label>Tu Barrio en Capilla del Monte</label>
+            <small id="prof-neighborhood-lock" class="hidden">🔒 Bloqueado por 30 días</small>
+          </div>
+          <select id="prof-neighborhood"></select>
+          <div id="prof-neighborhood-locked" class="locked-field hidden"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Cambiar Emoticón de Avatar (20 opciones)</label>
+          <div id="prof-avatar-grid" class="avatar-grid"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono / WhatsApp</label>
+          <input type="text" id="prof-phone" placeholder="+54 9 3548..." />
+          <label class="checkbox-label mt-1">
+            <input type="checkbox" id="prof-phone-visible" />
+            <span>Hacer visible mi WhatsApp a otros vecinos</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>Biografía / Presentación en el pueblo</label>
+          <textarea id="prof-bio" rows="3" maxlength="150" placeholder="Contale a los vecinos a qué te dedicás..." oninput="document.getElementById('bio-counter').textContent = 150 - this.value.length + ' caracteres restantes'"></textarea>
+          <div style="text-align: right; font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="bio-counter">150 caracteres restantes</div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger-outline" onclick="handleLogout()">🚪 Cerrar Sesión</button>
+          <div class="footer-actions">
+            <button type="button" class="btn btn-outline" onclick="closeProfileModal()">Cancelar</button>
+            <button type="submit" class="btn btn-teal">✅ Guardar Cambios</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL PERFIL PÚBLICO (Para ver y Votar) ===== -->
+  <div id="public-profile-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--teal-800), var(--teal-600)); color: white; border: none;">
+        <div class="modal-header-info">
+          <span id="pub-avatar" class="modal-avatar" style="font-size: 32px;">⛰️</span>
+          <div>
+            <h3 id="pub-name" style="color: white; font-size: 18px;">Vecino</h3>
+            <p id="pub-barrio" style="color: #99f6e4; font-size: 12px;">📍 Barrio</p>
+          </div>
+        </div>
+        <button class="icon-btn" style="color: white;" onclick="closePublicProfile()">✕</button>
+      </div>
+      
+      <div class="modal-body" style="text-align: center; padding: 1.5rem 1rem;">
+        
+        <!-- Puntos (más chicos) -->
+        <div id="pub-points-container" style="display: none; margin-bottom: 0.5rem;">
+          <span style="font-size: 20px; font-weight: 900; color: var(--teal-600);" id="pub-points">0</span>
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">votos</span>
+        </div>
+        
+        <!-- Insignia actual -->
+        <div id="pub-badge" class="badge" style="display: none; padding: 4px 12px; border-radius: 999px; font-weight: 800; font-size: 14px; margin-bottom: 1rem;">
+          Destacado
+        </div>
+
+        <!-- Barra de Progreso Dinámica -->
+        <div style="margin: 1.5rem 0; text-align: left;">
+          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; color: var(--text-secondary); margin-bottom: 4px; padding: 0 4px;">
+            <span id="pub-progress-target">Próximo rango</span>
+            <span id="pub-progress-percent">0%</span>
+          </div>
+          
+          <div style="background: var(--slate-200); height: 12px; border-radius: 999px; overflow: hidden; position: relative;">
+            <div id="pub-progress-bar" style="background: #cbd5e1; height: 100%; width: 0%; transition: all 0.5s ease; border-radius: 999px;"></div>
+          </div>
+          
+          <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 6px; font-weight: 600;" id="pub-progress-text">0 / 5 votos</div>
+          
+          <!-- Camino de insignias -->
+          <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding: 0 4px; font-size: 16px; opacity: 0.4;" id="pub-badges-path">
+            <span id="path-vecino" title="Vecino">👤</span>
+            <span id="path-novato" title="Novato">✨</span>
+            <span id="path-colaborador" title="Colaborador">🌱</span>
+            <span id="path-activo" title="Activo">🔥</span>
+            <span id="path-muyactivo" title="Muy Activo">🌟</span>
+            <span id="path-destacado" title="Destacado">⭐</span>
+          </div>
+        </div>
+
+        <button id="btn-public-votar" onclick="toggleVotoVecino()" class="btn btn-teal btn-block btn-lg" style="border-radius: 999px; margin-top: 0.5rem;">
+          ⭐ Votar a este vecino
+        </button>
+        
+        <!-- Herramientas de moderador -->
+        <div id="admin-ban-actions" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 0.5rem; text-align: left;">Herramientas de Moderador:</p>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-danger-outline btn-sm" style="flex: 1; border: 1px solid #fca5a5;" onclick="banearUsuario(30)">⏳ Ban 30 días</button>
+            <button class="btn btn-danger-outline btn-sm" style="flex: 1; background: #fee2e2; color: #b91c1c;" onclick="banearUsuario('permanente')">🚫 Ban Permanente</button>
+          </div>
+        </div>
+
+        <div id="pub-bio" style="margin-top: 1.5rem; font-size: 13px; color: var(--text-secondary); font-style: italic;">
+          "Sin biografía."
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL INSTALACIÓN ===== -->
+  <div id="install-modal" class="modal-overlay hidden">
+    <div class="modal install-modal">
+      <div class="modal-header install-header">
+        <div class="modal-header-info">
+          <span class="modal-avatar">📱</span>
+          <div>
+            <h3>Instalar Capilla Conecta</h3>
+            <p>Compatible con celulares, tablets Android e iPads</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="closeInstallModal()">✕</button>
+      </div>
+
+      <div class="install-tabs">
+        <button class="install-tab active" onclick="switchInstallTab('direct', this)">✨ Instalar (Oficial)</button>
+        <button class="install-tab" onclick="switchInstallTab('apk', this)">⚠️ ¿Por qué falló el APK?</button>
+        <button class="install-tab" onclick="switchInstallTab('ios', this)">📱 iPhone / iPad</button>
+      </div>
+
+      <div class="install-body">
+        <div id="install-direct" class="install-panel">
+          <div class="alert alert-success">
+            <strong>Método oficial recomendado para Android y Tablets:</strong>
+            <p>No necesitas descargar archivos .apk externos. Tu navegador genera e instala automáticamente la aplicación nativa.</p>
+          </div>
+
+          <button class="btn btn-teal btn-block btn-lg" onclick="installPWA()">📱 Instalar App en este Celular / Tablet</button>
+          <p class="hint" id="install-hint">Toca aquí y presiona "Instalar" en la ventana que aparece.</p>
+
+          <div class="install-steps">
+            <h4>📱 Cómo instalar desde Google Chrome (3 pasos):</h4>
+            <ol>
+              <li><b>Abre el enlace en Google Chrome o Samsung Internet</b><br><small>En tu celular o tablet Android.</small></li>
+              <li><b>Toca los 3 puntitos (⋮) arriba a la derecha</b><br><small>Es el menú principal del navegador.</small></li>
+              <li><b>Selecciona "Instalar aplicación" o "Agregar a la pantalla principal"</b><br><small>¡Listo! Se creará el ícono en tu pantalla de inicio.</small></li>
+            </ol>
+          </div>
+
+          <div class="share-link-box">
+            <span id="share-url">https://v25405713.github.io/capilla-conecta/docs/</span>
+            <button class="btn btn-teal btn-sm" onclick="copyLink()">🔗 Copiar enlace</button>
+          </div>
+        </div>
+
+        <div id="install-apk" class="install-panel hidden">
+          <div class="alert alert-warning">
+            <strong>¿Por qué te salió "Error al analizar el paquete"?</strong>
+            <p>Android 11+ bloquea archivos .apk descargados de internet que no fueron compilados con el SDK exacto de tu procesador.</p>
+          </div>
+          <div class="alert alert-success">
+            <strong>La Solución Definitiva:</strong>
+            <p>No necesitas descargar ningún archivo manual. Instálala directamente desde el navegador como WebAPK nativo.</p>
+          </div>
+          <button class="btn btn-teal btn-block" onclick="switchInstallTab('direct')">Ir a la Pestaña "Instalar (Oficial)" →</button>
+        </div>
+
+        <div id="install-ios" class="install-panel hidden">
+          <div class="install-steps">
+            <h4>📱 Instalación en iPhone / iPad (Safari):</h4>
+            <ol>
+              <li><b>Abre este enlace en el navegador Safari</b></li>
+              <li><b>Toca el botón Compartir</b> (cuadrado con flecha hacia arriba)</li>
+              <li><b>Selecciona "Agregar a la pantalla de inicio"</b></li>
+              <li><b>Toca "Agregar"</b> y ¡listo!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón Flotante Filtro (solo visible en Tablón) -->
+  <button id="fab-filter" class="hidden" onclick="openFilterModal()" title="Filtrar anuncios">🔍</button>
+
+  <!-- Botón Flotante Invitar -->
+  <button id="fab-invite" class="fab" onclick="shareInvite()" title="Compartir invitación">
+    🔗
+  </button>
+
+  <!-- ===== MODAL CREAR ANUNCIO (TABLÓN) ===== -->
+  <div id="create-post-modal" class="modal-overlay hidden">
+    <div class="modal profile-modal">
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <span class="modal-avatar">📝</span>
+          <div>
+            <h3>Nuevo Anuncio</h3>
+            <p>Publicá en el tablón vecinal (dura 72hs)</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="closeCreatePostModal()">✕</button>
+      </div>
+      <form id="create-post-form" class="modal-body" onsubmit="handleCreatePost(event)">
+        <div id="post-error" class="alert alert-error hidden"></div>
+
+        <div class="form-group">
+          <label>Título del anuncio *</label>
+          <input type="text" id="post-title" required placeholder="Ej: Vendo bicicleta rodado 29" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Categoría *</label>
+            <select id="post-category" required>
+              <option value="vende">🛒 Vendo</option>
+              <option value="regala">🎁 Regalo</option>
+              <option value="busca">🔍 Busco</option>
+              <option value="servicio">🛠️ Servicio / Oficio</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Precio (opcional)</label>
+            <input type="text" id="post-price" placeholder="Ej: $15.000 o Gratis" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Descripción *</label>
+          <textarea id="post-desc" rows="3" required placeholder="Contá los detalles de lo que ofrecés o buscás..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Tu Barrio</label>
+          <select id="post-neighborhood"></select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeCreatePostModal()">Cancelar</button>
+          <button type="submit" class="btn btn-teal">Publicar Anuncio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL DE FILTRO ===== -->
+  <div id="filter-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <span class="modal-avatar">🔍</span>
+          <div>
+            <h3>Filtrar Anuncios</h3>
+            <p>Encontrá lo que buscás</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="closeFilterModal()">✕</button>
+      </div>
+      <div class="filter-options">
+        <div class="filter-row">
+          <label>Buscar por palabra</label>
+          <input type="text" id="filter-text" placeholder="Ej: bicicleta, heladera..." oninput="applyFilters()" />
+        </div>
+        <div class="filter-row">
+          <label>Categoría</label>
+          <select id="filter-category" onchange="applyFilters()">
+            <option value="todos">Todas las categorías</option>
+            <option value="vende">🛒 Vende</option>
+            <option value="regala">🎁 Regala</option>
+            <option value="busca">🔍 Busca</option>
+            <option value="servicio">🛠️ Servicio</option>
+          </select>
+        </div>
+        <div class="filter-row">
+          <label>Barrio</label>
+          <select id="filter-barrio" onchange="applyFilters()">
+            <option value="todos">Todos los barrios</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button class="btn btn-outline" onclick="clearFilters()" style="flex: 1;">Limpiar</button>
+          <button class="btn btn-teal" onclick="closeFilterModal()" style="flex: 1;">Aplicar Filtro</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL DE NOTIFICACIONES ===== -->
+  <div id="notif-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <span class="modal-avatar">🔔</span>
+          <div>
+            <h3>Notificaciones</h3>
+            <p>Tus menciones y anuncios del barrio</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="closeNotifModal()">✕</button>
+      </div>
+      <div class="modal-body" id="notif-list" style="max-height: 60vh; overflow-y: auto;">
+        <div style="text-align:center; color:var(--text-muted); font-size:12px; padding:1rem;">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL AVISO NOTIFICACIONES ===== -->
+<div id="notif-warning-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width: 420px;">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <span class="modal-avatar">🔔</span>
+        <div>
+          <h3>Para recibir notificaciones</h3>
+          <p>Importante para tu celular</p>
+        </div>
+      </div>
+      <button class="icon-btn" onclick="document.getElementById('notif-warning-modal').classList.add('hidden')">✕</button>
+    </div>
+    <div class="modal-body" style="font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
+      <p>Para que te lleguen las notificaciones de Capilla Conecta <b>aunque no tengas la app abierta</b>, seguí estos pasos en tu celular:</p>
+      
+      <ol style="padding-left: 1.2rem; margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.75rem;">
+        <li><b>Bloqueá la app:</b> Abrí el menú de apps recientes (donde ves las tarjetas de las apps abiertas). Buscá Capilla Conecta, mantené presionado y tocá el <b>candado</b> (🔒) para que el celular no la cierre.</li>
+        <li><b>Quitá la optimización de batería:</b> Andá a <b>Ajustes > Aplicaciones > Capilla Conecta > Batería</b> y elegí <b>"Sin restricciones"</b> o <b>"No optimizar"</b>.</li>
+        <li><b>Instalá la PWA (opcional pero recomendado):</b> Si la instalás desde el navegador, es más probable que el sistema la respete.</li>
+      </ol>
+      
+      <div class="alert alert-warning" style="margin-top: 1rem; font-size: 12px;">
+        ⚠️ Si cerrás la app desde el menú de tareas (la "matás"), las notificaciones <b>pueden no llegar</b> hasta que la vuelvas a abrir.
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content: center;">
+      <button class="btn btn-teal" onclick="document.getElementById('notif-warning-modal').classList.add('hidden')">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL REGLAS DE CONVIVENCIA ===== -->
+<div id="rules-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width: 500px;">
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <span class="modal-avatar">🤝</span>
+        <div>
+          <h3>Reglas de Convivencia</h3>
+          <p>Capilla del Monte</p>
+        </div>
+      </div>
+      <button class="icon-btn" onclick="document.getElementById('rules-modal').classList.add('hidden')">✕</button>
+    </div>
+    <div class="modal-body" style="font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
+      <p>Para que Capilla Conecta sea un espacio lindo y útil para todos los vecinos, te pedimos:</p>
+      <ul style="padding-left: 1.5rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <li><b>Respeto mutuo:</b> No se permiten insultos, agravios ni discriminación.</li>
+        <li><b>Sin spam:</b> No publiques el mismo anuncio repetidamente.</li>
+        <li><b>Cuidado comunitario:</b> Si ves algo que no corresponde, avisale a un moderador.</li>
+        <li><b>Privacidad:</b> No compartas datos personales de otros vecinos sin permiso.</li>
+        <li><b>Uso responsable:</b> El tablón es para ventas, regalos y oficios. No para política ni peleas.</li>
+      </ul>
+      <p style="margin-top: 1rem; font-weight: bold; color: var(--teal-700);">Al aceptar, te comprometés a cumplir estas normas.</p>
+    </div>
+    <div class="modal-footer" style="justify-content: center;">
+      <button class="btn btn-teal" onclick="document.getElementById('rules-modal').classList.add('hidden'); document.getElementById('reg-rules').checked = true;">Leí y acepto</button>
+    </div>
+  </div>
+</div>
+
+  <!-- ===== TOAST ===== -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Firebase -->
+  <script type="module" src="firebase-config.js"></script>
+
+  <!-- Datos de comercios -->
+  <script src="comercios-data.js"></script>
+
+  <!-- App principal -->
+  <script src="app.js"></script>
+</body>
+</html>
