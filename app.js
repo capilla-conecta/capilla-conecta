@@ -2238,6 +2238,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Forzar el modo invitado al cargar la página
   if (typeof switchRegisterMode === 'function') switchRegisterMode('guest');
     // 👇 LLAMAMOS AL CONTADOR 👇
-  //listenTotalVecinos();
+  listenTotalVecinos();
   // 👆 FIN DE LA LLAMADA 👆
 }); // Cierra DOMContentLoaded
