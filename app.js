@@ -1955,7 +1955,7 @@ function openInstallModal() { document.getElementById('install-modal').classList
 function closeInstallModal() { document.getElementById('install-modal').classList.add('hidden'); }
 function switchInstallTab(tab, btn) { document.querySelectorAll('.install-tab').forEach(b => b.classList.remove('active')); if (btn) btn.classList.add('active'); document.querySelectorAll('.install-panel').forEach(p => p.classList.add('hidden')); const panel = document.getElementById('install-' + tab); if (panel) panel.classList.remove('hidden'); }
 async function installPWA() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') { showToast('¡App instalada!'); closeInstallModal(); } deferredPrompt = null; } else { showToast('Seguí los 3 pasos de abajo.'); } }
-function copyLink() { navigator.clipboard.writeText('https://v25405713.github.io/capilla-conecta/docs/').then(() => showToast('¡Enlace copiado!')); }
+function copyLink() { navigator.clipboard.writeText('https://capilla-conecta.github.io/capilla-conecta/').then(() => showToast('¡Enlace copiado!')); }
 function shareInvite() {
   const url = window.location.href; const text = `¡Sumate a Capilla Conecta!`;
   if (navigator.share) navigator.share({ title: 'Capilla Conecta', text, url }).catch(() => copiarAlPortapapeles(text));
